@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -68,11 +66,10 @@ public class Chromosome implements Comparable<Chromosome> {
     }
 
     public void evaluateFitness() {
-        ConcurrentMap<FieldPieceKey, Integer> fieldMoveMap = new ConcurrentHashMap<>();
         IntToDoubleFunction fitnessEvaluator = i -> {
-            TetrisState s = new TetrisState(this, fieldMoveMap);
+            TetrisState s = new TetrisState(this);
             while (!s.hasLost()) {
-                s.makeMove();
+                s.makeMove(s.getBestMove());
             }
             return s.getRowsCleared();
         };

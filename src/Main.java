@@ -1,4 +1,5 @@
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -16,9 +17,14 @@ public class Main {
             demo = new TFrame(s);
 
             while (!s.hasLost()) {
-                s.makeMove();
+                s.makeMove(s.getBestMove());
                 s.draw();
                 s.drawNext(0, 0);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             demo.dispose();
             LOGGER.info(String.format("%d moves made with %d rows cleared", s.getTurnNumber(), s.getRowsCleared()));

@@ -44,7 +44,7 @@ public class Population {
     }
 
     private void evaluateFitness() {
-        chromosomes.stream().forEach(Chromosome::evaluateFitness);
+        chromosomes.parallelStream().forEach(Chromosome::evaluateFitness);
     }
 
     private Chromosome getRandom() {
