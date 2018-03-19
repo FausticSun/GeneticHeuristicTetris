@@ -22,6 +22,7 @@ public class TetrisState extends State {
         for (int i=0; i<ROWS; i++) {
             simulatedField[i] = Arrays.copyOf(getField()[i], COLS);
         }
+        int[] simulatedTop = Arrays.copyOf(getTop(), COLS);
 
         // Convert single int move to orient and slot
         int orient = legalMoves[nextPiece][move][ORIENT];
@@ -50,6 +51,11 @@ public class TetrisState extends State {
             }
         }
 
+        //adjust top
+        for(int c = 0; c < pWidth[nextPiece][orient]; c++) {
+            simulatedTop[slot+c]=height+getpTop()[nextPiece][orient][c];
+        }
+
         int rowsCleared = 0;
 
         //check for full rows - starting at the top
@@ -69,9 +75,12 @@ public class TetrisState extends State {
                 for(int c = 0; c < COLS; c++) {
 
                     //slide down all bricks
-                    for(int i = r; i < getTop()[c]; i++) {
+                    for(int i = r; i < simulatedTop[c]; i++) {
                         simulatedField[i][c] = simulatedField[i+1][c];
                     }
+                    //lower the top
+                    simulatedTop[c]--;
+                    while(simulatedTop[c]>=1 && simulatedField[simulatedTop[c]-1][c]==0) simulatedTop[c]--;
                 }
             }
         }
@@ -80,27 +89,21 @@ public class TetrisState extends State {
         // Bias?
         features.add(1);
         // Column Heights
-        Integer[] colHeights = new Integer[COLS];
-        for (int i=0; i<colHeights.length; i++) {
-            colHeights[i] = 0;
+        for (int i: simulatedTop) {
+            features.add(i);
         }
-        for (int row=0; row<simulatedField.length; row++) {
-            for (int col=0; col<simulatedField[row].length; col++) {
-                if (simulatedField[row][col] != 0) {
-                    colHeights[col] = Math.max(colHeights[col], row);
-                }
-            }
-        }
-        features.addAll(Arrays.asList(colHeights));
         // Difference between adjacent column height
-        for (int i=0; i<colHeights.length-1; i++)
-            features.add(Math.abs(colHeights[0] - colHeights[1]));
+        for (int i=0; i<simulatedTop.length-1; i++)
+            features.add(Math.abs(simulatedTop[0] - simulatedTop[1]));
         // Maximum column height
-        features.add(Collections.max(Arrays.asList(colHeights)));
+        int max = 0;
+        for (int i: simulatedTop)
+            max = Math.max(i, max);
+        features.add(max);
         // Holes
         int holes = 0;
         for (int col=0; col<COLS; col++) {
-            for (int row=colHeights[col]; row>=0; row--) {
+            for (int row=simulatedTop[col]; row>=0; row--) {
                 if (simulatedField[row][col] == 0) {
                     holes++;
                 }
@@ -109,7 +112,6 @@ public class TetrisState extends State {
         features.add(holes);
         // Rows cleared
         features.add(rowsCleared);
-
 
         return IntStream.range(0, Chromosome.CHROMOSOME_SIZE).boxed()
                 .mapToDouble(i -> chromosome.getGenes().get(i)*features.get(i))
