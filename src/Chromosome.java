@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Chromosome implements Comparable<Chromosome> {
-    public static final int CHROMOSOME_SIZE = 23;
+    public static final int CHROMOSOME_SIZE = 6;
     public static final double CROSSOVER_RATE = 0.5;
     public static final double AVERAGE_RATE = 0.5;
     public static final double MUTATION_RATE = 0.05;

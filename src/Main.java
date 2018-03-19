@@ -10,7 +10,7 @@ public class Main {
         TFrame demo;
 
         while (ex.getGeneration() < Experiment.MAXIMUM_GENERATIONS) {
-            ex.run(10);
+            ex.run(1);
 
             LOGGER.info(String.format("Demoing fittest of Generation %d", ex.getGeneration()));
             s = new TetrisState(ex.getFittest());
@@ -21,7 +21,7 @@ public class Main {
                 s.draw();
                 s.drawNext(0, 0);
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

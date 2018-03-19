@@ -3,7 +3,7 @@ import java.util.logging.Logger;
 public class Experiment {
     private static final Logger LOGGER = Logger.getLogger(Experiment.class.getName());
     public static final int MAXIMUM_GENERATIONS = 1000;
-    public static final int MAXIMUM_FITNESS = 10000;
+    public static final int MAXIMUM_FITNESS = 1000000;
     private Population pop;
 
     public Experiment() {

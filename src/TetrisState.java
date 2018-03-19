@@ -41,6 +41,8 @@ public class TetrisState extends State {
             return 0.0;
         }
 
+        int landingHeight = height+getpHeight()[nextPiece][orient]/2;
+
 
         //for each column in the piece - fill in the appropriate blocks
         for(int i = 0; i < pWidth[nextPiece][orient]; i++) {
@@ -86,21 +88,62 @@ public class TetrisState extends State {
         }
 
         List<Integer> features = new ArrayList<>();
-        // Bias?
-        features.add(1);
-        // Column Heights
-        for (int i: simulatedTop) {
-            features.add(i);
+        // Original features in the project description
+//        // Bias?
+//        features.add(1);
+//        // Column Heights
+//        for (int i: simulatedTop) {
+//            features.add(i);
+//        }
+//        // Difference between adjacent column height
+//        for (int i=0; i<simulatedTop.length-1; i++)
+//            features.add(Math.abs(simulatedTop[0] - simulatedTop[1]));
+//        // Maximum column height
+//        int max = 0;
+//        for (int i: simulatedTop)
+//            max = Math.max(i, max);
+//        features.add(max);
+//        // Holes
+//        int holes = 0;
+//        for (int col=0; col<COLS; col++) {
+//            for (int row=simulatedTop[col]; row>=0; row--) {
+//                if (simulatedField[row][col] == 0) {
+//                    holes++;
+//                }
+//            }
+//        }
+//        features.add(holes);
+//        // Rows cleared
+//        features.add(rowsCleared);
+
+        // El-Tetris features
+        // http://imake.ninja/el-tetris-an-improvement-on-pierre-dellacheries-algorithm/
+        features.add(landingHeight);
+        features.add(rowsCleared);
+        int rowTransitions = 0;
+        for (int row=0; row<ROWS; row++) {
+            int prev = simulatedField[row][0];
+            for (int col=1; col<COLS; col++) {
+                if ((prev == 0 && simulatedField[row][col] != 0) ||
+                        (prev != 0 && simulatedField[row][col] == 0)) {
+                    rowTransitions++;
+                }
+                prev = simulatedField[row][col];
+            }
         }
-        // Difference between adjacent column height
-        for (int i=0; i<simulatedTop.length-1; i++)
-            features.add(Math.abs(simulatedTop[0] - simulatedTop[1]));
-        // Maximum column height
-        int max = 0;
-        for (int i: simulatedTop)
-            max = Math.max(i, max);
-        features.add(max);
-        // Holes
+        features.add(rowTransitions);
+        int colTransitions = 0;
+        for (int col=0; col<COLS; col++) {
+            int prev = simulatedField[0][col];
+            for (int row=1; row<ROWS; row++) {
+                if ((prev == 0 && simulatedField[row][col] != 0) ||
+                        (prev != 0 && simulatedField[row][col] == 0)) {
+                    colTransitions++;
+                }
+                prev = simulatedField[row][col];
+            }
+        }
+        features.add(colTransitions);
         int holes = 0;
         for (int col=0; col<COLS; col++) {
             for (int row=simulatedTop[col]; row>=0; row--) {
@@ -110,8 +153,39 @@ public class TetrisState extends State {
             }
         }
         features.add(holes);
-        // Rows cleared
-        features.add(rowsCleared);
+        int wellSum = 0;
+        boolean prevIsWell, thisIsWell;
+        prevIsWell = false;
+        for (int row=0; row<ROWS; row++) {
+            thisIsWell = simulatedField[row][0] == 0 &&
+                    simulatedField[row][1] != 0;
+            if (prevIsWell && thisIsWell) {
+                wellSum++;
+            }
+            prevIsWell = thisIsWell;
+        }
+        for (int col=1; col<COLS-1; col++) {
+            prevIsWell = false;
+            for (int row=0; row<ROWS; row++) {
+                thisIsWell = simulatedField[row][col] == 0 &&
+                        simulatedField[row][col-1] != 0 &&
+                        simulatedField[row][col+1] != 0;
+                if (prevIsWell && thisIsWell) {
+                    wellSum++;
+                }
+                prevIsWell = thisIsWell;
+            }
+        }
+        prevIsWell = false;
+        for (int row=0; row<ROWS; row++) {
+            thisIsWell = simulatedField[row][COLS-1] == 0 &&
+                    simulatedField[row][COLS-2] != 0;
+            if (prevIsWell && thisIsWell) {
+                wellSum++;
+            }
+            prevIsWell = thisIsWell;
+        }
+        features.add(wellSum);
 
         return IntStream.range(0, Chromosome.CHROMOSOME_SIZE).boxed()
                 .mapToDouble(i -> chromosome.getGenes().get(i)*features.get(i))
