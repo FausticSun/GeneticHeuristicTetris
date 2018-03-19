@@ -1,16 +1,31 @@
-import javax.swing.plaf.ComponentInputMapUIResource;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.IntStream;
 
 public class TetrisState extends State {
     private Chromosome chromosome;
+    private ConcurrentMap<FieldPieceKey, Integer> fieldMoveMap;
 
-    public TetrisState(Chromosome chromosome) {
+    public TetrisState(Chromosome chromosome, ConcurrentMap<FieldPieceKey, Integer> fieldMoveMap) {
+        this.fieldMoveMap = fieldMoveMap;
         this.chromosome = chromosome;
     }
 
-    public int getBestMove() {
+    public TetrisState(Chromosome chromosome) {
+        this.fieldMoveMap = new ConcurrentHashMap<>();
+        this.chromosome = chromosome;
+    }
+
+    public void makeMove() {
+        super.makeMove(this.getBestMove(new FieldPieceKey(this)));
+    }
+
+    public int getBestMove(FieldPieceKey fieldPiece) {
+        return fieldMoveMap.computeIfAbsent(fieldPiece, this::computeBestMove);
+    }
+
+    private Integer computeBestMove(FieldPieceKey fieldPieceKey) {
         return IntStream.range(0, legalMoves().length).parallel().boxed()
                 .max(Comparator.comparing(this::evaluateHeuristic))
                 .orElse(0);
