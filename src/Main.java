@@ -20,11 +20,6 @@ public class Main {
                 s.makeMove(s.getBestMove());
                 s.draw();
                 s.drawNext(0, 0);
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
             demo.dispose();
             LOGGER.info(String.format("%d moves made with %d rows cleared", s.getTurnNumber(), s.getRowsCleared()));
