@@ -1,6 +1,5 @@
 import java.awt.Color;
-
-
+import java.util.Random;
 
 
 public class State {
@@ -12,7 +11,7 @@ public class State {
 
 	public boolean lost = false;
 	
-	
+	private Random random;
 	
 
 	
@@ -160,13 +159,20 @@ public class State {
 	
 	//constructor
 	public State() {
+	    random = new Random();
 		nextPiece = randomPiece();
 
 	}
-	
+
+	public State(long seed) {
+	    random = new Random(seed);
+		nextPiece = randomPiece();
+
+	}
+
 	//random integer, returns 0-6
 	private int randomPiece() {
-		return (int)(Math.random()*N_PIECES);
+		return random.nextInt(N_PIECES);
 	}
 	
 

@@ -2,15 +2,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.IntToDoubleFunction;
+import java.util.function.LongToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 public class Chromosome implements Comparable<Chromosome> {
     public static final int CHROMOSOME_SIZE = 6;
     public static final double CROSSOVER_RATE = 0.5;
     public static final double AVERAGE_RATE = 0.5;
     public static final double MUTATION_RATE = 0.05;
-    public static final int FITNESS_EVALUATIONS = 5;
+    public static final int FITNESS_EVALUATIONS = 1;
     public static final double PERTERB_RANGE = 1;
     private List<Double> genes;
     private double fitness = -1;
@@ -65,15 +67,18 @@ public class Chromosome implements Comparable<Chromosome> {
         return fitness;
     }
 
-    public void evaluateFitness() {
-        IntToDoubleFunction fitnessEvaluator = i -> {
-            TetrisState s = new TetrisState(this);
+    public void evaluateFitness(long seed) {
+        LongToDoubleFunction fitnessEvaluator = i -> {
+            TetrisState s = new TetrisState(this, i);
             while (!s.hasLost()) {
                 s.makeMove(s.getBestMove());
             }
             return s.getRowsCleared();
         };
-        fitness = IntStream.range(0, FITNESS_EVALUATIONS).parallel()
+        Random seededRandom = new Random(seed);
+        fitness = LongStream.range(0, FITNESS_EVALUATIONS)
+                .map(i -> seededRandom.nextLong())
+                .parallel()
                 .mapToDouble(fitnessEvaluator)
                 .average().orElse(0);
     }

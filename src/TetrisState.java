@@ -9,6 +9,10 @@ public class TetrisState extends State {
     public TetrisState(Chromosome chromosome) {
         this.chromosome = chromosome;
     }
+    public TetrisState(Chromosome chromosome, long seed) {
+        super(seed);
+        this.chromosome = chromosome;
+    }
 
     public int getBestMove() {
         return IntStream.range(0, legalMoves().length).parallel().boxed()
